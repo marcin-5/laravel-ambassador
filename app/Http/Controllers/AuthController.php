@@ -4,12 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\RegisterRequest;
 use App\Models\User;
+use Cookie;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class AuthController extends Controller
 {
-    public function register(RegisterRequest $request)
+    public function register(RegisterRequest $request): Response
     {
         $user = User::create(
             $request->only('first_name', 'last_name', 'email')
@@ -21,7 +22,7 @@ class AuthController extends Controller
         return response($user, Response::HTTP_CREATED);
     }
 
-    public function login(Request $request)
+    public function login(Request $request): Response
     {
         if (!\Auth::attempt($request->only('email', 'password'))) {
             return response(['error' => 'Invalid credentials'], Response::HTTP_UNAUTHORIZED);
@@ -38,5 +39,13 @@ class AuthController extends Controller
     public function user(Request $request)
     {
         return $request->user();
+    }
+
+    public function logout(): Response
+    {
+        $cookie = Cookie::forget('jwt');
+        return response([
+            'message' => 'Logged out successfully',
+        ])->withCookie($cookie);
     }
 }
